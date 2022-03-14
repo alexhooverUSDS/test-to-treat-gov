@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Test to Treat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/uswds/2.13.2/js/uswds.min.js" integrity="sha512-KraR86E81E+20boEJD1yLcq6XGPJMgYUVHxah06v4QUXf9d+XtLLdP3a4jji57E7S6CHv6AFbd2HU+NUyc8GKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uswds/2.13.2/css/uswds.min.css" integrity="sha512-yYSbcmr75W5CMh9oPKdJ03usRkug91UTa5uI9t5Rptm9Mmg706BwpWQH6KvHVOfwkJxjdVbGWl7nxfHD9o2e3w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/uswds/2.13.2/js/uswds-init.min.js" integrity="sha512-CERRusk3iiaHwELaoxK7Q70UHH6ifSJKSrq3Cfk/TsZooDq7sJYsRCPLdP3YMnTfr3LoeTALPlkpC6g+F6w1Vw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+<!-- Favicons -->
+<!-- Description -->
+<!-- Facebook -->
+<!-- Twitter -->
+
+</head>
+<body>
+  <a class="usa-skipnav" href="#main-content">Skip to main content</a>
+
+  <section class="usa-banner" aria-label="Official government website">
+    <div class="usa-accordion">
+      <header class="usa-banner__header">
+        <div class="usa-banner__inner">
+          <div class="grid-col-auto">
+
+          </div>
+          <div class="grid-col-fill tablet:grid-col-auto">
+            <p class="usa-banner__header-text">
+              An official website of the United States government
+            </p>
+            <p class="usa-banner__header-action" aria-hidden="true">
+              Here’s how you know
+            </p>
+          </div>
+          <button
+            class="usa-accordion__button usa-banner__button"
+            aria-expanded="false"
+            aria-controls="gov-banner-default"
+          >
+            <span class="usa-banner__button-text">Here’s how you know</span>
+          </button>
+        </div>
+      </header>
+    </div>
+  </section>
+
+  <div class="usa-overlay"></div>
+
+  <header class="usa-header usa-header--extended">
+    <div class="usa-navbar">
+      <div class="usa-logo" id="extended-logo">
+        <em class="usa-logo__text">
+          <a href="javascript:void(0)" title="Test-to-Treat.gov">
+            Test-to-Treat.gov
+          </a>
+        </em>
+      </div>
+    </div>
+  </header>
+
+  <main class="display-flex flex-column flex-align-center">
+    <div class="grid-container">
+      <div class="grid-row">
+        <div class="tablet:grid-col" style="margin-bottom:2rem">
+          <h1>Find a Test-to-Treat store near you</h1>
+          <p class="site-text-intro">Some local pharmacies and healthcare providers will give you a COVID-19 test and treatment for free. Search for your zip code to find a location near you.</p>
+
+          <form class="usa-search usa-search__small" role="search">
+              <label class="usa-sr-only" for="zip">
+                Search for zip code
+              </label>
+              <input
+                class="usa-input"
+                id="zip"
+                type="search"
+                name="zip"
+              />
+              <button class="usa-button" type="submit">
+                Search
+              </button>
+            </form>
+        </div>
+      </div>
+      <div class="grid-row grid-gap-lg">
+        <div class="tablet:grid-col-7">
+          <ul id="location-list"  class="usa-collection"></ul>
+        </div>
+        <div class="tablet:grid-col-5">
+          <div style="width:100%; height:100%; background-color:grey"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script>
+  const params = new Proxy(new URLSearchParams(window.location.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+  });
+
+  var zip = params.zip;
+  console.log(zip);
+
+  var form = document.getElementById('zip');
+  form.value = zip;
+
+
+  var query = "https://services2.arcgis.com/ZQ4jTQn6k7VPXEwO/arcgis/rest/services/Therapeutic_Locations/FeatureServer/2/query?where=zip%20%3D%20" + "'" + zip + "'&outFields=*&outSR=4326&f=json";
+  console.log(query)
+
+  var results = {};
+  fetch(query).then(function (response) {
+  	// The API call was successful!
+  	if (response.ok) {
+  		return response.json();
+  	} else {
+  		return Promise.reject(response);
+  	}
+  }).then(function (data) {
+  	// This is the JSON from our response
+  	// console.log(data);
+    data.features.forEach(function(feature,index){
+      var provider_name = feature.attributes.provider_name;
+      var address_1 = feature.attributes.address1;
+      var address_2 = feature.attributes.address2;
+      var city_state_zip = feature.attributes.city + ", " + feature.attributes.state + " " + feature.attributes.zip;
+      var map_url = "https://www.google.com/maps/search/?api=1&query=" + feature.attributes.latitude + "%2C" + feature.attributes.longitude
+
+      // Create list element for USWDS collection and add USWDS class
+      var element = document.createElement("li");
+      element.classList.add("usa-collection__item");
+
+      var collection_div = document.createElement("div");
+      collection_div.classList.add("usa-collection__body");
+
+      var collection_title = document.createElement("h3");
+      collection_title.classList.add("usa-collection__heading");
+
+      var collection_title_link = document.createElement("a");
+      collection_title_link.classList.add("usa-link");
+      collection_title_link.href = "#"
+      collection_title_link.appendChild(document.createTextNode(provider_name));
+
+      var collection_desc = document.createElement("p");
+      collection_desc.classList.add("usa-collection__description");
+      collection_desc.appendChild(document.createTextNode(address_1));
+      collection_desc.appendChild(document.createElement("br"));
+      if(address_2 !== null){
+        collection_desc.appendChild(document.createTextNode(address_2));
+        collection_desc.appendChild(document.createElement("br"));
+      }
+      collection_desc.appendChild(document.createTextNode(city_state_zip));
+      collection_desc.appendChild(document.createElement("br"));
+
+      var map_link = document.createElement("a");
+      map_link.classList.add("usa-link", "usa-link--external");
+      map_link.href = map_url;
+      map_link.appendChild(document.createTextNode("Get directions to " + provider_name))
+      collection_desc.appendChild(map_link);
+
+      collection_title.appendChild(collection_title_link);
+      collection_div.appendChild(collection_title);
+      collection_div.appendChild(collection_desc);
+      element.appendChild(collection_div)
+      document.getElementById('location-list').appendChild(element);
+
+      console.log(feature);
+    })
+
+  }).catch(function (err) {
+  	// There was an error
+  	console.warn('Something went wrong.', err);
+  });
+  </script>
+</body>
+</html>
